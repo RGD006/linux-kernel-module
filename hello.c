@@ -1,4 +1,4 @@
-
+// SPDX-License-Identifier: Dual BSD/GPL
 /*
  * Copyright (c) 2017, GlobalLogic Ukraine LLC
  * All rights reserved.
@@ -33,10 +33,20 @@
 #include <linux/module.h>
 #include <linux/printk.h>
 #include <linux/moduleparam.h>
+#include <linux/klist.h>
+#include <linux/ktime.h>
 
 MODULE_AUTHOR("Vladyslav Sukhomlin <sukhomlin.vladyslav@lll.kpi.ua>");
-MODULE_DESCRIPTION("Hello, world in Linux Kernel Training");
+MODULE_DESCRIPTION("Hello, world in Linux Kernel Training.\nWrite time of each 'hello world' output");
 MODULE_LICENSE("Dual BSD/GPL");
+
+struct kernel_time {
+	struct list_head list;
+	unsigned int number; // output number
+	ktime_t time; // output time
+};
+
+static LIST_HEAD(output_list);
 
 unsigned int hello_count = 1;
 
@@ -52,7 +62,13 @@ static int __init hello_init(void)
 	}
 
 	for (unsigned int i = 0; i < hello_count; i++) {
-		pr_emerg("Hello, world!\n", hello_count);
+		struct kernel_time *o_time = kmalloc(sizeof(struct kernel_time), GFP_KERNEL);
+
+		o_time->time = ktime_get();
+		o_time->number = i;
+		list_add(&o_time->list, &output_list);
+
+		pr_emerg("Hello, world!\n");
 	}
 
 	return 0;
@@ -60,9 +76,22 @@ static int __init hello_init(void)
 
 static void __exit hello_exit(void)
 {
-	/* Do nothing here right now */
+	struct list_head *pos, *n;
+
+	pr_emerg("Exit module. Write some data info\n");
+
+	list_for_each_safe(pos, n, &output_list) {
+		struct kernel_time *data = container_of(pos, struct kernel_time, list);
+
+		pr_emerg("number: %u | time: %llu\n", data->number, data->time);
+
+		kfree(data);
+		list_del(pos);
+	}
 }
 
 module_init(hello_init);
 module_exit(hello_exit);
+
+MODULE_PARM_DESC(hello_count, "The number of 'Hello, world!' output");
 module_param(hello_count, uint, 0444);
