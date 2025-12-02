@@ -29,29 +29,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/printk.h>
-#include <linux/moduleparam.h>
-#include <linux/klist.h>
-#include <linux/ktime.h>
-#include <linux/slab.h>
+#include "hello.h"
 
 MODULE_AUTHOR("Vladyslav Sukhomlin <sukhomlin.vladyslav@lll.kpi.ua>");
 MODULE_DESCRIPTION("Hello, world in Linux Kernel Training.\nWrite time of each 'hello world' output");
 MODULE_LICENSE("Dual BSD/GPL");
 
-struct kernel_time {
-	struct list_head list;
-	unsigned int number; // output number
-	ktime_t time; // output time
-};
-
 static LIST_HEAD(output_list);
 
-unsigned int hello_count = 1;
-
-static int __init hello_init(void)
+int print_hello(unsigned int hello_count)
 {
 	if (hello_count > 10) {
 		pr_err("Can't start. Too big parameter hello-count\n");
@@ -73,6 +59,12 @@ static int __init hello_init(void)
 	}
 
 	return 0;
+} EXPORT_SYMBOL(print_hello);
+
+static int __init hello_init(void)
+{
+  pr_info("start hello1 module");
+  return 0;
 }
 
 static void __exit hello_exit(void)
@@ -89,10 +81,9 @@ static void __exit hello_exit(void)
 		kfree(data);
 		list_del(pos);
 	}
+
+  pr_info("end hello1 module");
 }
 
 module_init(hello_init);
 module_exit(hello_exit);
-
-MODULE_PARM_DESC(hello_count, "The number of 'Hello, world!' output");
-module_param(hello_count, uint, 0444);
