@@ -8,6 +8,7 @@
 #include <linux/klist.h>
 #include <linux/ktime.h>
 #include <linux/slab.h>
+#include <linux/bug.h>
 
 struct kernel_time {
 	struct list_head list;

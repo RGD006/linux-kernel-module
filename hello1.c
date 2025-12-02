@@ -39,10 +39,9 @@ static LIST_HEAD(output_list);
 
 int print_hello(unsigned int hello_count)
 {
-	if (hello_count > 10) {
-		pr_err("Can't start. Too big parameter hello-count\n");
-		return -EINVAL;
-	} else if (hello_count >= 5 && hello_count <= 10) {
+  BUG_ON(hello_count > 10);
+
+	if (hello_count >= 5 && hello_count <= 10) {
 		pr_warn("Too big parameter hello-count\n");
 	} else if (hello_count == 0) {
 		pr_warn("hello-count parameter equal 0. Nothing to output");
@@ -50,6 +49,7 @@ int print_hello(unsigned int hello_count)
 
 	for (unsigned int i = 0; i < hello_count; i++) {
 		struct kernel_time *o_time = kmalloc(sizeof(struct kernel_time), GFP_KERNEL);
+    BUG_ON(!o_time);
 
 		o_time->time = ktime_get();
 		o_time->number = i;
