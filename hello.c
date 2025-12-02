@@ -35,6 +35,7 @@
 #include <linux/moduleparam.h>
 #include <linux/klist.h>
 #include <linux/ktime.h>
+#include <linux/slab.h>
 
 MODULE_AUTHOR("Vladyslav Sukhomlin <sukhomlin.vladyslav@lll.kpi.ua>");
 MODULE_DESCRIPTION("Hello, world in Linux Kernel Training.\nWrite time of each 'hello world' output");
